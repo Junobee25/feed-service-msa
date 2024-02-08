@@ -1,5 +1,6 @@
 package com.hanghae.feedservice.service;
 
+import com.hanghae.feedservice.external.client.UserServiceClient;
 import com.hanghae.feedservice.domain.constant.ErrorCode;
 import com.hanghae.feedservice.domain.entity.Article;
 import com.hanghae.feedservice.domain.entity.ArticleComment;
@@ -8,12 +9,8 @@ import com.hanghae.feedservice.domain.repository.ArticleRepository;
 import com.hanghae.feedservice.exception.FeedServiceApplicationException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Objects;
 
@@ -23,14 +20,14 @@ public class ArticleCommentService {
 
     private final ArticleRepository articleRepository;
     private final ArticleCommentRepository articleCommentRepository;
-    private final RestTemplate restTemplate;
+    private final UserServiceClient userServiceClient;
 
     @Transactional
     public void create(Long feedId, String content, HttpHeaders headers) {
         Article article = articleRepository.findById(feedId)
                 .orElseThrow(() -> new FeedServiceApplicationException(ErrorCode.ARTICLE_NOT_FOUND));
 
-        ArticleComment articleComment = ArticleComment.of(getUserAccountEmail(headers).getBody(), article, content);
+        ArticleComment articleComment = ArticleComment.of(userServiceClient.getMyEmail(headers), article, content);
         articleCommentRepository.save(articleComment);
     }
 
@@ -39,7 +36,7 @@ public class ArticleCommentService {
         ArticleComment articleComment = articleCommentRepository.findById(commentId)
                 .orElseThrow(() -> new FeedServiceApplicationException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (!Objects.equals(articleComment.getUserEmail(), getUserAccountEmail(headers).getBody())) {
+        if (!Objects.equals(articleComment.getUserEmail(), userServiceClient.getMyEmail(headers))) {
             throw new FeedServiceApplicationException(ErrorCode.INVALID_PERMISSION);
         }
 
@@ -52,18 +49,10 @@ public class ArticleCommentService {
         ArticleComment articleComment = articleCommentRepository.findById(commentId)
                 .orElseThrow(() -> new FeedServiceApplicationException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if (!Objects.equals(articleComment.getUserEmail(), getUserAccountEmail(headers).getBody())) {
+        if (!Objects.equals(articleComment.getUserEmail(), userServiceClient.getMyEmail(headers))) {
             throw new FeedServiceApplicationException(ErrorCode.INVALID_PERMISSION);
         }
 
         articleCommentRepository.delete(articleComment);
-    }
-
-    private ResponseEntity<String> getUserAccountEmail(HttpHeaders headers) {
-        String userAccountUrl = "http://127.0.0.1:8000/user-service/users/email";
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        return restTemplate.exchange(userAccountUrl, HttpMethod.GET, entity,
-                String.class);
     }
 }
