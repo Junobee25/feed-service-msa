@@ -1,4 +1,4 @@
-package com.hanghae.feedservice.service;
+package com.hanghae.feedservice.external.service;
 
 import com.hanghae.feedservice.domain.constant.ErrorCode;
 import com.hanghae.feedservice.domain.repository.ArticleCommentRepository;
@@ -6,12 +6,11 @@ import com.hanghae.feedservice.domain.repository.ArticleRepository;
 import com.hanghae.feedservice.exception.FeedServiceApplicationException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class ArticleWithCommentService {
+public class LikesTargetService {
 
     private final ArticleRepository articleRepository;
     private final ArticleCommentRepository articleCommentRepository;
