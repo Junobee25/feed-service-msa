@@ -6,6 +6,7 @@ import com.hanghae.feedservice.dto.request.ArticleWriteRequest;
 import com.hanghae.feedservice.dto.response.Response;
 import com.hanghae.feedservice.service.ArticleCommentService;
 import com.hanghae.feedservice.service.ArticleService;
+import com.hanghae.feedservice.service.ArticleWithCommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ public class FeedController {
 
     private final ArticleService articleService;
     private final ArticleCommentService articleCommentService;
+    private final ArticleWithCommentService articleWithCommentService;
 
     @PostMapping("/posts")
     public Response<Void> createFeed(ArticleWriteRequest request, @RequestHeader HttpHeaders headers) {
@@ -54,4 +56,8 @@ public class FeedController {
         return Response.success();
     }
 
+    @GetMapping("/{domainType}/{targetId}")
+    public Boolean hasTarget(@PathVariable String domainType, @PathVariable Long targetId, @RequestHeader HttpHeaders headers) {
+        return articleWithCommentService.hasTarget(domainType, targetId);
+    }
 }
