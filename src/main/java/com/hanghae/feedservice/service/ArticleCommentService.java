@@ -1,5 +1,6 @@
 package com.hanghae.feedservice.service;
 
+import com.hanghae.feedservice.domain.constant.AlarmType;
 import com.hanghae.feedservice.external.client.AlarmServiceClient;
 import com.hanghae.feedservice.external.client.UserServiceClient;
 import com.hanghae.feedservice.domain.constant.ErrorCode;
@@ -8,6 +9,7 @@ import com.hanghae.feedservice.domain.entity.ArticleComment;
 import com.hanghae.feedservice.domain.repository.ArticleCommentRepository;
 import com.hanghae.feedservice.domain.repository.ArticleRepository;
 import com.hanghae.feedservice.exception.FeedServiceApplicationException;
+import com.hanghae.feedservice.external.dto.request.AlarmRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -37,7 +39,7 @@ public class ArticleCommentService {
         Optional<Long> toUserId = userServiceClient.getUserId(article.getUserEmail());
 
         if (fromUserId.isPresent() && toUserId.isPresent()) {
-            alarmServiceClient.saveAlarm(toUserId.get(), fromUserId.get(), feedId, "NEW COMMENT");
+            alarmServiceClient.saveAlarm(AlarmRequest.of(toUserId.get(), fromUserId.get(), feedId, AlarmType.NEW_COMMENT_ON_POST));
         }
     }
 
