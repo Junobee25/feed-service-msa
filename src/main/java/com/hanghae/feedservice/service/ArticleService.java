@@ -1,5 +1,6 @@
 package com.hanghae.feedservice.service;
 
+import com.hanghae.feedservice.external.client.AlarmServiceClient;
 import com.hanghae.feedservice.external.client.UserServiceClient;
 import com.hanghae.feedservice.domain.constant.ErrorCode;
 import com.hanghae.feedservice.domain.entity.Article;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,11 +20,16 @@ public class ArticleService {
 
     private final ArticleRepository articleRepository;
     private final UserServiceClient userServiceClient;
+    private final AlarmServiceClient alarmServiceClient;
 
     @Transactional
     public void create(String title, String content, HttpHeaders headers) {
-        Article article = Article.of(userServiceClient.getMyEmail(headers), title, content);
+        String userEmail = userServiceClient.getMyEmail(headers);
+        Article article = Article.of(userEmail, title, content);
         articleRepository.save(article);
+
+        Optional<Long> fromUserId = userServiceClient.getUserId(userEmail);
+        fromUserId.ifPresent(aLong -> alarmServiceClient.saveAlarm(aLong, aLong, article.getId(), "NEW_POST"));
     }
 
     @Transactional
