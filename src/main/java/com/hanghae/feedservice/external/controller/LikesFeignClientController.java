@@ -12,8 +12,8 @@ public class LikesFeignClientController {
 
     private final LikesTargetService likesTargetService;
 
-    @GetMapping("/{domainType}/{targetId}")
-    public Boolean hasTarget(@PathVariable String domainType, @PathVariable Long targetId, @RequestHeader HttpHeaders headers) {
-        return likesTargetService.hasTarget(domainType, targetId);
+    @GetMapping("/{likeType}/{targetId}")
+    public Boolean hasTarget(@PathVariable String likeType, @PathVariable Long targetId) {
+        return likesTargetService.hasTarget(likeType, targetId);
     }
 }
