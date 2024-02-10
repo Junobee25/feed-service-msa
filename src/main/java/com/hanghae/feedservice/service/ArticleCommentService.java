@@ -1,5 +1,6 @@
 package com.hanghae.feedservice.service;
 
+import com.hanghae.feedservice.external.client.AlarmServiceClient;
 import com.hanghae.feedservice.external.client.UserServiceClient;
 import com.hanghae.feedservice.domain.constant.ErrorCode;
 import com.hanghae.feedservice.domain.entity.Article;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,7 @@ public class ArticleCommentService {
     private final ArticleRepository articleRepository;
     private final ArticleCommentRepository articleCommentRepository;
     private final UserServiceClient userServiceClient;
+    private final AlarmServiceClient alarmServiceClient;
 
     @Transactional
     public void create(Long feedId, String content, HttpHeaders headers) {
@@ -29,6 +32,13 @@ public class ArticleCommentService {
 
         ArticleComment articleComment = ArticleComment.of(userServiceClient.getMyEmail(headers), article, content);
         articleCommentRepository.save(articleComment);
+
+        Optional<Long> fromUserId = userServiceClient.getUserId(articleComment.getUserEmail());
+        Optional<Long> toUserId = userServiceClient.getUserId(article.getUserEmail());
+
+        if (fromUserId.isPresent() && toUserId.isPresent()) {
+            alarmServiceClient.saveAlarm(toUserId.get(), fromUserId.get(), feedId, "NEW COMMENT");
+        }
     }
 
     @Transactional
