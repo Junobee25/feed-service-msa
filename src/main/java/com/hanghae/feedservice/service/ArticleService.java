@@ -1,11 +1,13 @@
 package com.hanghae.feedservice.service;
 
+import com.hanghae.feedservice.domain.constant.AlarmType;
 import com.hanghae.feedservice.external.client.AlarmServiceClient;
 import com.hanghae.feedservice.external.client.UserServiceClient;
 import com.hanghae.feedservice.domain.constant.ErrorCode;
 import com.hanghae.feedservice.domain.entity.Article;
 import com.hanghae.feedservice.domain.repository.ArticleRepository;
 import com.hanghae.feedservice.exception.FeedServiceApplicationException;
+import com.hanghae.feedservice.external.dto.request.AlarmRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +31,7 @@ public class ArticleService {
         articleRepository.save(article);
 
         Optional<Long> fromUserId = userServiceClient.getUserId(userEmail);
-        fromUserId.ifPresent(aLong -> alarmServiceClient.saveAlarm(aLong, aLong, article.getId(), "NEW_POST"));
+        fromUserId.ifPresent(aLong -> alarmServiceClient.saveAlarm(AlarmRequest.of(aLong, aLong, article.getId(), AlarmType.NEW_POST)));
     }
 
     @Transactional
